@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from metaspace import SMInstance
 
-
 class metaspaceFetch():
     
     def __init__(self, downloadPathName: str ="./data/"):
@@ -41,8 +40,6 @@ class metaspaceFetch():
 
         '''
         return SMInstance()
-
-
 
     def search_metaspace(self,
                          keyword: str = None,
@@ -113,8 +110,6 @@ class metaspaceFetch():
         #returns a list of datasets
         return dataset_List
        
-    
-
     def make_dataframe(self, list_of_datasets: list): 
         '''
         Make a dataframe of a list of SMObjects/datasets.
@@ -722,9 +717,6 @@ class metaspaceFetch():
         dataset_Name = self.get_dataset_name(dataset)
         dir_path_name = self.create_dir(dataset_Name, self.__downloadPathName)
         dataset.download_to_dir(dir_path_name)
-
-    
-
 
     def __create_dir(self, fileName: str, pathName: str):
         '''
