@@ -1,5 +1,5 @@
 ---
-title: "Using the metadata_workflow package"
+title: "Using metaspace_Fetch"
 author: "Jonathan A Ruepong"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -10,11 +10,60 @@ vignette: >
 ---
 
 ```{r setup, include = FALSE}
+library(reticulate)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
+
+`metadata_fetch` is included in the metadata-workflow package. It provides a way to interact with METASPACE by searching, filtering, and downloading mass spectrometry imaging data. This uses the metaspace2020 api to connect to the server and provide other functionalities.
+
+`metadata_fetch` has several key functions to use:
+
+* The **search_metaspace()** function enables searching on the METASPACE server itself. Each parameter corresponds to a filter the metaspace2020 api enables to search with. This returns a list of objects (SMObjects) the metaspace2020 api uses. Each object corresponds to a dataset on METASPACE.
+
+* The **make_dataframe()** function makes a dataframe out of a list of dataset objects. The dataframe includes information for each dataset included in the list you give.
+
+* The **filter_metadata()** function can filter a dataframe of dataset objects. It will filter by the values or keys given to it as a list of arguments for a specific parameter. It will return a new dataframe after filtering.
+
+* The **filter_molecule()** function can filter a dataframe based on molecules detected in a dataset. It works the same as the `filter_metadata()` function. Where you give a list of values to filter with as an argument.
+
+* The **annotate()** function adds a new column to your dataframe. This new column is called "Molecules" which stores all annotation information on the molecules detected in that dataset.
+
+* The **dataset_selection()** function is used to download selected datasets. Select a column to select the datasets by, and then give it a list of datasets or values to choose which datasets to download. It also can download all datasets from your dataframe.
+
+## In-depth look on key functinons
+
+`search_metaspace()` calls on the `datasets()` function used by the metaspace2020 api to search for datasets on METASPACE. Each parameter in the `search_metaspace()` function is a filter used to find datasets matching the criteria. The function returns a list of dataset objects (SMObjects) which the metaspace2020 api uses to represent datasets. Each parameter is optional as calling the function without any arguments returns all available datasets on METASPACE.
+
+Parameters:
+
+* **keyword** takes in a string. This searches by keyword on METASPACE. It finds matches based on a dataset's name.
+
+* **datasetID** takes in a list. Given a list of dataset IDs, it will search METASPACE by ID.
+
+* **submitter_ID** takes in a string. It searches METASPACE by submitter ID.
+
+* **group_ID** takes in a string. It searches METASPACE by group ID.
+
+* **project_ID** takes in a string. It searches METASPACE by project ID.
+
+* **polarity** takes in a string(POSITIVE,NEGATIVE). It searches METASPACE by polarity.
+
+* **ionisation_Source** takes in a string. It searches METASPACE by the ionisation source.
+
+* **analyzer_Type** takes in a string. It searches METASPACE by the analyzer type.
+
+* **maldi_Matrix** takes in a string. It searches METASPACE by maldi matrix.
+
+* **organism** takes in a string. It searches METASPACE by organism.
+
+`make_dataframe()` functions as a way to present more information of the datasets returned from `search_metaspace()`. The parameter `list_of_datasets` takes in a list of dataset objects. It will return a dataframe of thoses objects with more information on them.
+
+Example dataframe:
+
+
 
 Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
 
