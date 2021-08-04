@@ -5,86 +5,101 @@ import os
 import re
 import matplotlib.pyplot as plt
 import numpy as np
-
 from metaspace import SMInstance
 
 
-#Class object for fetching metaspace datasets
 class metaspaceFetch():
     
-    def __init__(self, pathName="./data/"):
+    def __init__(self, downloadPathName: str ="./data/"):
+        '''
+        Setup metaspaceFetch class
+
+        Parameters
+        ----------
+        downloadPathName : str, optional
+            The path name where downloaded datasets are located. 
+            The default is "./data/".
+
+        Returns
+        -------
+        None.
+
+        '''
         self.__SM = self.setup_connection()
-        self.__pathName = pathName
+        self.__downloadPathName = downloadPathName
         
         
     def setup_connection(self):
         '''
-        This functions returns an instance of SMInstance().
-        This object is used to connect to the Metaspace website
+        Setup connection to METASPACE server using METASPACE API
+
+        Returns
+        -------
+        SMInstance : Class object for communication with METASPACE
+            The object is used to connect and communicate witht the
+            METASPACE server.
+
         '''
         return SMInstance()
 
 
 
     def search_metaspace(self,
-                         keyword = None,
-                         datasetID = [],
-                         submitter_ID = None,
-                         group_ID = None,
-                         project_ID = None,
-                         polarity = None,
-                         ionisation_Source = None,
-                         analyzer_Type = None,
-                         maldi_Matrix = None,
-                         organism = None): 
+                         keyword: str = None,
+                         datasetID: list = [],
+                         submitter_ID: str = None,
+                         group_ID: str = None,
+                         project_ID: str = None,
+                         polarity: str = None,
+                         ionisation_Source: str = None,
+                         analyzer_Type: str = None,
+                         maldi_Matrix: str = None,
+                         organism: str = None): 
         '''
-        Description
-        ----------
-        This calls the datasets function from the Metaspace package to return 
-        a list of available datasets on Metaspace with the given parameters.
+        Call METASPACE API function "datasets", search METASPACE website by the 
+        given arguments, return searched datasets as a list.
         
         Parameters
         ----------
-        keyword : string, optional
+        keyword : str, optional
             Search by key word on METASPACE, which is by name. 
             The default is None.
-        datasetID : A list object, optional
+        datasetID : list, optional
             Given a list of dataset IDs, it will search METASPACE by ID. 
             The default is [].
-        submitter_ID : string, optional
+        submitter_ID : str, optional
             Search datasets by submitter ID. 
             The default is None.
-        group_ID : string, optional
+        group_ID : str, optional
             Search datasets by group ID. 
             The default is None.
-        project_ID : string, optional
+        project_ID : str, optional
             Search datasets by project ID. 
             The default is None.
-        polarity : string literal, optional
+        polarity : str[Polarity] , optional
             Search datasets by polarity by using "POSITIVE" or "NEGATIVE". 
             The default is None.
-        ionisation_Source : string, optional
+        ionisation_Source : str, optional
             Search datasets by ionisation source. 
             The default is None.
-        analyzer_Type : string, optional
+        analyzer_Type : str, optional
             Search datasets by analyzer. 
             The default is None.
-        maldi_Matrix : string, optional
+        maldi_Matrix : str, optional
             Search datasets by the maldi matrix. 
             The default is None.
-        organism : string, optional
+        organism : str, optional
             Search datasets by organism. 
             The default is None.
     
         Returns
         -------
-        A list of SMObjects which each object is a dataset on METSPACE.
-    
+        dataset_List : List
+            A list of SMObjects which each object is a dataset on 
+            METSPACE.
         '''
         
-        #makes a function call to make_dataframe to make a dataframe based on the list that 
-        #is returned from datasets function
-        temp_List =  self.__SM.datasets(nameMask=(keyword),
+        dataset_List =  self.__SM.datasets(nameMask=(keyword),
                                  idMask=(datasetID),
                                  submitter_id=(submitter_ID), 
                                  group_id=(group_ID),
@@ -96,43 +111,41 @@ class metaspaceFetch():
                                  organism=(organism))
         
         #returns a list of datasets
-        return temp_List
-        #return self.make_dataframe(temp_List)
-        
+        return dataset_List
+       
     
 
-    def make_dataframe(self, list_of_datasets): 
+    def make_dataframe(self, list_of_datasets: list): 
         '''
-        Description
-        ----------
-        This function makes a daaframe from a list of SMObjects/datasets.
+        Make a dataframe of a list of SMObjects/datasets.
         
         Parameters
         ----------
-        list_of_datasets : list()
+        list_of_datasets : list
             A list of SMObjects/datasets are required to make the dataframe.
 
         Returns
         -------
-        dataframe
-            A dataframe which contains information the datasets given from 
+        dataframe: pd.DataFrame()
+            A dataframe which contains information of the datasets given from 
             the list.
 
         '''        
         #if the list_of_datasets is not emtpy, then run
         if (list_of_datasets):
-            column_List = ["Name", "ID", "Submitter", "Group",
-                           "Analyzer", "Metadata Type", "Ionisation Source",
-                           "Organism", "Organism Part", "Adducts","Condition",
+            column_List = ["Name","ID","SMDataset Object","Submitter","Group",
+                           "Analyzer","Metadata Type","Ionisation Source",
+                           "Organism","Organism Part","Adducts","Condition",
                            "Maldi Matrix","Growth Conditions","Polarity",
                            "Resolving Power","Pixel Size","MZ Value",
                            "MALDI Matrix Application","Sample Stabilisation",
                            "Solvent","Tissue Modification",
-                           "Additional Information","SMDataset Object"]
+                           "Additional Information"]
             
             return pd.concat([pd.DataFrame([[
                                          self.get_dataset_name(dataset),
                                          self.get_dataset_id(dataset),
+                                         dataset,
                                          self.get_dataset_submitter(dataset),
                                          self.get_dataset_group(dataset),
                                          self.get_dataset_analyzer(dataset),
@@ -152,8 +165,8 @@ class metaspaceFetch():
                                          self.get_dataset_sample_stabilisation(dataset),
                                          self.get_dataset_solvent(dataset),
                                          self.get_dataset_tissue_modification(dataset),
-                                         self.get_dataset_additionalinfo(dataset),
-                                         dataset]],
+                                         self.get_dataset_additionalinfo(dataset)
+                                         ]],
                                          columns= column_List) for dataset in list_of_datasets],
                                          ignore_index=True)
             
@@ -162,35 +175,32 @@ class metaspaceFetch():
             return pd.DataFrame()
         
 
-    #FIXME
     def filter_metadata(self,
-                        df,
-                        adducts = None,
-                        analyzer = None,
-                        condition = None,
-                        groupID = None,
-                        groupShortName = None,
-                        growthConditions = None,
-                        ionisationSource = None,
-                        maldiMatrix = None,
-                        metadataType = None,
-                        organism = None,
-                        organismPart = None,
-                        polarity = None,
-                        resolvingPower = None,
-                        pixelSize_Xaxis = None,
-                        pixelSize_Yaxis = None,
-                        mzValue = None):
+                        df: pd.DataFrame(),
+                        adducts: list = None,
+                        analyzer: list = None,
+                        condition: list = None,
+                        groupID: list = None,
+                        groupName: list = None,
+                        groupShortName: list = None,
+                        growthConditions: list = None,
+                        ionisationSource: list = None,
+                        maldiMatrix: list = None,
+                        metadataType: list = None,
+                        organism: list = None,
+                        organismPart: list = None,
+                        polarity: list = None,
+                        lessOrEq_ResolvingPower: list = None,
+                        lessOrEq_PixelSize_Xaxis: list = None,
+                        lessOrEq_PixelSize_Yaxis: list = None,
+                        lessOrEq_mzValue: list = None):
+        
         '''
-        Description
-        ----------
-        This function filters through a dataframe of SMObjects/datasets based 
-        on the given parameters. Where each parameter takes in an argument of a list
-        of keywords, or values to filter by. 
+        Filter through a dataframe of datasets by the give arguments
 
         Parameters
         ----------
-        df : dataframe object
+        df : pd.DataFrame()
             A dataframe of SMObjects/datasets to filter.
         adducts : list, optional
             Give a list of keywords or values to filter by adducts. 
@@ -204,6 +214,9 @@ class metaspaceFetch():
         groupID : list, optional
             Give a list of keywords or values to filter by group ID. 
             The default is None.
+        groupName : list, optional
+            Give a list of keywords or values to filter by group name.
+            The default is None
         groupShortName : list, optional
             Give a list of keywords or values to filter by group short name. 
             The default is None.
@@ -228,41 +241,49 @@ class metaspaceFetch():
         polarity : list, optional
             Given a list of keywords or values to filter by polarity. 
             The default is None.
-        resolvingPower : list, optional
-            Given a list of keywords or values to filter by resolving power. 
+        lessOrEq_ResolvingPower : list, optional
+            Given a list of keywords or values to filter by resolving power.
+            The given value (or key) must be <= to a datasets resolving power. 
             The default is None.
-        pixelSize_Xaxis : list, optional
-            Given a list of keywords or values to filter by pixel size (Xaxis). 
+        lessOrEq_PixelSize_Xaxis : list, optional
+            Given a list of keywords or values to filter by pixel size (Xaxis).
+            The given value (or key) must be <= to a datasets pixel size (Xaxis).
             The default is None.
-        pixelSize_Yaxis : list, optional
-            Given a list of keywords or values to filter by pixel size (Yaxis). 
+        lessOrEq_PixelSize_Yaxis : list, optional
+            Given a list of keywords or values to filter by pixel size (Yaxis).
+            The given value (or key) must be <= to a datasets pixel size (Yaxis).
             The default is None.
-        mzValue : list, optional
-            Given a list of keywords or values to filter by mz value. 
+        lessOrEq_mzValue : list, optional
+            Given a list of keywords or values to filter by mz value.
+            The given value (or key) must be <= to a datasets mz value.
             The default is None.
 
         Returns
         -------
-        dataframe
+        pd.DataFrame()
             A dataframe which contains information on datasets.
             This will be a new dataframe after filtering.
 
         '''
         
-        
+        #a series of datasets
         curr_Datasets = df["SMDataset Object"]
+        
+        #a list for matched datasets, 
         filtered_List = list()
         
-        #filter to find matching datasets with the given list
+        #runs a if branch if the corresponding parameter was given a list as an argument
         if(adducts):
+            #Goes through each dataset from the given dataframe
             for dataset in curr_Datasets.items():
                 list_of_Adducts = self.get_dataset_adducts(dataset[1])
-                #Runs each adduct given to find a match
-                #when found a match, it stops to prevent duplications
+                #Goes through each element/key of the given list to find a match
+                #when a match is found it stops to prevent duplications
                 for key in adducts:
                     if(list_of_Adducts.count(key) != 0):
                         filtered_List.append(curr_Datasets[dataset[0]])
-                        break 
+                        break
+            #replaces curr_Datasets series with the new list of matched datasets        
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
         
@@ -284,13 +305,38 @@ class metaspaceFetch():
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
         
+        if(groupName):
+            for dataset in curr_Datasets.items():
+                curr_Group = self.get_dataset_group(dataset[1])
+                if((curr_Group != "N/A") and (curr_Group != None)):
+                    for key in groupName:
+                        if(key == curr_Group.get("name", "N/A")):
+                            filtered_List.append(curr_Datasets[dataset[0]])
+                            break
+            curr_Datasets = pd.Series(data = filtered_List)
+            filtered_List = list()
+        
         if(groupID):
-            #Work in progress
-            pass
+            for dataset in curr_Datasets.items():
+                curr_Group = self.get_dataset_group(dataset[1])
+                if((curr_Group != "N/A") and (curr_Group != None)):
+                    for key in groupID:
+                        if(key == curr_Group.get("id", "N/A")):
+                            filtered_List.append(curr_Datasets[dataset[0]])
+                            break
+            curr_Datasets = pd.Series(data = filtered_List)
+            filtered_List = list()
         
         if(groupShortName):
-            #Work in progress
-            pass
+            for dataset in curr_Datasets.items():
+                curr_Group = self.get_dataset_group(dataset[1])
+                if((curr_Group != "N/A") and (curr_Group != None)):
+                    for key in groupShortName:
+                        if(key == curr_Group.get("shortName", "N/A")):
+                            filtered_List.append(curr_Datasets[dataset[0]])
+                            break
+            curr_Datasets = pd.Series(data = filtered_List)
+            filtered_List = list()
         
         if(growthConditions):
             for dataset in curr_Datasets.items():
@@ -341,7 +387,7 @@ class metaspaceFetch():
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
         
-        #Filtering by organism is case sensitive.
+        #Filtering by organism part is case sensitive.
         #Ex: skin will match skin, but "Skin" will not match skin
         if(organismPart):
             for dataset in curr_Datasets.items():
@@ -360,12 +406,13 @@ class metaspaceFetch():
                         break
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
-            
-        if(resolvingPower):
+        
+        #finds a match if key <= to a datasets resolving power
+        if(lessOrEq_ResolvingPower):
             for dataset in curr_Datasets.items():
                 curr_ResolvingPower = self.get_dataset_resolvingpower(dataset[1])
                 if(curr_ResolvingPower != "N/A"):
-                    for key in resolvingPower:
+                    for key in lessOrEq_ResolvingPower:
                         key = float(key)
                         curr_ResolvingPower = float(curr_ResolvingPower)
                         if(key <= curr_ResolvingPower):
@@ -374,9 +421,23 @@ class metaspaceFetch():
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
         
-        if(pixelSize_Yaxis):
+        #finds a match if key <= to a datasets pixel size (Xaxis)
+        if(lessOrEq_PixelSize_Xaxis):
             for dataset in curr_Datasets.items():
-                for key in pixelSize_Yaxis:
+                for key in lessOrEq_PixelSize_Xaxis:
+                    pixelSize = self.get_dataset_pixelsize(dataset[1])
+                    if(pixelSize == "N/A"):
+                        break
+                    elif(int(key) <= int(pixelSize["Xaxis"])):
+                        filtered_List.append(curr_Datasets[dataset[0]])
+                        break
+            curr_Datasets = pd.Series(data = filtered_List)
+            filtered_List = list()
+        
+        #finds a match if key <= to a datasets pixel size (Yaxis)
+        if(lessOrEq_PixelSize_Yaxis):
+            for dataset in curr_Datasets.items():
+                for key in lessOrEq_PixelSize_Yaxis:
                     pixelSize = self.get_dataset_pixelsize(dataset[1])
                     if(pixelSize == "N/A"):
                         break
@@ -385,10 +446,11 @@ class metaspaceFetch():
                         break
             curr_Datasets = pd.Series(data = filtered_List)
             filtered_List = list()
-            
-        if(mzValue):
+        
+        #finds a match if key <= to a datasets mz value
+        if(lessOrEq_mzValue):
             for dataset in curr_Datasets.items():
-                for key in mzValue:
+                for key in lessOrEq_mzValue:
                     mz = self.get_dataset_mzvalue(dataset[1])
                     if(mz == "N/A"):
                         break
@@ -399,101 +461,133 @@ class metaspaceFetch():
             filtered_List = list()
 
         return self.make_dataframe(curr_Datasets.tolist())
-    
-    
-    
-    def filter_by_molecule(self, df, molecule):
+     
+    def filter_molecule(self, df: pd.DataFrame(), molecules: list):
         '''
-        Description
-        ----------
-        The function filters a dataframe of SMObject/datasets by molecules.
+        Filter dataframe of metadata by molecule.
 
         Parameters
         ----------
-        df : dataframe
+        df : pd.DataFrame()
             A dataframe of SMObjects/datasets to filter.
-        molecule : list
-            A list of molecule formulas to filter by.
+        molecules : list
+            Given a list of keywords or values to filter by molecule.
 
         Returns
         -------
-        dataframe
+        pd.DataFrame()
             A dataframe which contains information on datasets.
             This will be a new dataframe after filtering.
 
         '''
-        curr_Datasets = df["SMDataset Object"]
+        
+        #checks to see if the dataframe has a "Molecules" column
+        #if not then it creates one by calling annotate()
+        if "Molecules" not in df.columns:
+            df = self.annotate(df)
+        
+        #becomes a series
+        dataset_Annotations = df["Molecules"]
+        
+        #a list for matched datasets
         filtered_List = list()
         
-        for dataset in curr_Datasets.items():
-            annotations = self.get_dataset_annotation(dataset[1])
-            results = self.get_dataset_results(dataset[1])
-            
-            for key in molecule:
-                #Marker to signal is a match was found 
-                #which stops the loop from searching any further
+        #goes through each dataset's annotations (which are dataframes) from the given dataframe
+        for dataset in dataset_Annotations.items():
+            #a dataset can have multple annotations
+            #it goes through each annotation dataframe
+            for annotation_DF in dataset[1]:
+                #a marker to signal when a dataset matches with a key
                 stopMark = False
-                for annotation in annotations:
-                    if(re.search(pattern=key, string=annotation)):
-                        filtered_List.append(curr_Datasets[dataset[0]])
-                        stopMark = True
-                        break
+                #if a annotation dataframe is empty then skip
+                if(annotation_DF.empty):
+                    continue
+                #a series of ions/molecules
+                curr_Mols = annotation_DF["ion"]
+                for mol in curr_Mols.items():
+                    for key in molecules:
+                        #runs when it finds a match
+                        if(re.search(pattern=key, string=mol[1])):
+                            temp_Dataset = df.iloc[dataset[0]]
+                            temp_Dataset = temp_Dataset["SMDataset Object"]
+                            filtered_List.append(temp_Dataset)
+                            stopMark = True
+                            break
+                    if(stopMark):
+                        break   
                 if(stopMark):
                     break
-                
-                for result in results:
-                    if(re.search(pattern=key, string=result)):
-                        filtered_List.append(curr_Datasets[dataset[0]])
-                        stopMark = True
-                        break
-                if(stopMark):
-                    break
+        #returns the an empty dataframe when no datasets were found
+        if(len(filtered_List) == 0):
+            return df
+        #returns a new dataframe of matched datasets if some are found
+        else:    
+            return self.annotate((self.make_dataframe(filtered_List)))
+                            
+    def annotate(self,df: pd.DataFrame()):
+        '''
+        Add a new column for a dataset's annotations/results called "Molecules"
+        Each element in "Molecules" is a list of annotations/results dataframes  
+
+        Parameters
+        ----------
+        df : pd.DataFrame()
+            A dataframe of SMObjects/datasets.
+
+        Returns
+        -------
+        df : pd.DataFrame()
+            A dataframe of SMObjects/datasets with a new column called "Molecules".
+
+        '''
+        
+        #a series of datasets
+        datasets = df["SMDataset Object"]
+        
+        #a list of annotations/results
+        #which is a dataframe of detected molecules from that dataset
+        resultsList = list()
+        
+        #goes through each dataset
+        for dataset in datasets.items():
+            databases = dataset[1].database_details
+            #this keeps track of all the dataset's reults/annotations
+            List = list()
+            #a dataset can have multiple databases
+            #it goes through each database and grabs its corresponding annotations/results
+            for database in databases:
+                databaseTuple= (database["name"],database["version"])
+                tempResult = dataset[1].results(database=databaseTuple,fdr=1.0)
+                #if the results/annotations return nothing then add an empty dataframe
+                if(tempResult.empty):
+                    List.append(pd.DataFrame())
+                #if the results/annotations return something then add it
+                else:
+                    List.append(tempResult)
+            resultsList.append(List)
             
-                
-        return self.make_dataframe(filtered_List)
+        #makes a new column in the given dataframe called "Molecules"
+        df["Molecules"] = resultsList
         
-    
-    def get_dataset_annotation(self,dataset):
+        return df   
+ 
+    def get_download_links(self, dataset):
         '''
-        Returns a list of all annotations from a given SMObject/dataset.
+        returns a dictionary with information on the dataset and its download links
+
+        Parameters
+        ----------
+        dataset : SMDataset object
+            An object that represents a dataset on METASPACE.
+
+        Returns
+        -------
+        dict
+            A dictionary with information on the dataset and its download links.
+
         '''
-        databases = dataset.database_details
-        annotations = list()
-        
-        for database in databases:
-            database_Tuple = (database["name"],database["version"])
-            annotationList = dataset.annotations(database = database_Tuple,fdr = 1.0)#FIXME
-            
-            temp_Str = str()
-            for annotation in annotationList:
-                temp_Str = temp_Str + annotation[0] + ":"
-        
-            annotations.append(temp_Str)
-        
-        return annotations
-   
-    def get_dataset_results(self,dataset):
-        '''
-        Returns a list of all results from a given SMObject/dataset.
-        '''
-        databases = dataset.database_details
-        results = list()
-        
-        for database in databases:
-            database_Tuple = (database["name"],database["version"])
-            results_DF = dataset.results(database = database_Tuple, fdr = 1.0)#FIXME
-            #If the DF is empty, return an empty list
-            if(results_DF.empty):
-                return list()
-            results_DF = results_DF["ionFormula"].tolist()
-            temp_Str = str()
-            for result in results_DF:
-                temp_Str = temp_Str + result + ":"
-        
-            results.append(temp_Str)
-        
-        return results
-   
+        return dataset.download_links()
+ 
     def get_dataset_name(self, dataset):
         return dataset.name
 
@@ -560,109 +654,100 @@ class metaspaceFetch():
     def get_dataset_tissue_modification(self, dataset):
         return dataset._metadata["Sample_Preparation"].get("Tissue_Modification", "N/A")
     
-    def set_dir_pathname(self, pathName):
-        self.__pathName = pathName
     
-    
-    def dataset_selection(self, df, selected_Datasets = [], df_Column = "Name"):
-        #FIXME param: df_Column is set to default "Name"
-        #allow for other ways to select data. This needs more logic.
-        #should not print all with None
-        #current only prints the name, does not download anything
+    def set_download_pathname(self, pathName):
+        self.__downloadPathName = pathName
         
+    def get_download_pathname(self):
+        return self.__pathName
+    
+    #Currently does not download datasets, but prints the object
+    def dataset_selection(self, df: pd.DataFrame(), selected_Datasets: list  = [], 
+                          df_Column: str = "Name", download_All: bool = False):
         '''
-        Description
-        ----------
-        This function takes in a dataframe of datasets from metaspace and
-        downloads them based on a given list of names.
-        (It does not download the dataset. It prints out the dataset for testing)
-        
+        Download a list of selected datasets from a selected dataframe column, or download all.
+        Currently does not download datasets, but prints the object.
+
         Parameters
-        ----------            
-        selected_datasets : list, optional
-            A list of selected datasets to download. 
-            The default is an empty list object [].
-    
+        ----------
+        df : pd.DataFrame()
+            A dataframe of SMObjects/datasets.
+        selected_Datasets : list, optional
+            A list of selected datasets to download. The default is [].
+        df_Column : str, optional
+            A column to selecte the datasets from. The default is "Name".
+        download_All : bool, optional
+            Make "True" to download all datasets from the given dataframe. The default is False.
+
         Returns
         -------
         None.
-    
-        '''    
-        #Runs if the __dataset_DF is None, then print out "Dataframe is empty" 
+
+        '''
+        
+        #runs if the given dataframe is empty 
         if (df.empty):
             print("Dataframe is emtpy")
-
-        #Runs if the __dataset_DF is not None        
+            
         else:
-            #True when the list "selected_Datasets" is empty
-            if not selected_Datasets:        
+            #when true it will download all datasets currently in the dataframe
+            if(download_All):        
                 downloadDatasets = df["SMDataset Object"]
-                
-                for dataset in downloadDatasets:
-                    print(dataset.name)
-                    
-            #Runs when the list "selected_Datasets" is not emtpy    
+                for dataset in downloadDatasets.items():
+                    print(dataset[1])
+                    #self.__download_dataset(dataset[1])
+            #runs when download_All is false
             else:
                 for dataset in selected_Datasets:
-                    print(df.loc[df[df_Column] == dataset, df_Column])
-  
+                    curr_DS = df.loc[df[df_Column] == dataset, "SMDataset Object"]
+                    curr_DS = curr_DS.iloc[0]
+                    print(curr_DS)
+                    #self.__download_dataset(curr_DS)
+
+    def __download_dataset(self, dataset):
+        '''
+        Download a given dataset, setup file name and directory
+
+        Parameters
+        ----------
+        dataset : SMDataset object
+            An object that represents a dataset on METASPACE.
+
+        Returns
+        -------
+        None.
+
+        '''
+        
+        dataset_Name = self.get_dataset_name(dataset)
+        dir_path_name = self.create_dir(dataset_Name, self.__downloadPathName)
+        dataset.download_to_dir(dir_path_name)
+
     
 
 
-    def create_dir(self, filename,pathname): #FIXME (return a none if the dir exists)
+    def __create_dir(self, fileName: str, pathName: str):
         '''
-        Description:
-            This function takes in a filename and pathname and creates a new
-            directory if it does not exists
-        Input:
-            filename:the desired filename (string)
-            pathname:the desired location/path to create the directory
-        Output:
-            a return value of the newly/exisiting path name to the directory
+        Make a directory to store downloaded dataset
+
+        Parameters
+        ----------
+        fileName : str
+            The directory name.
+        pathName : str
+            The path name to the directory.
+
+        Returns
+        -------
+        path : str
+            A path name to the directory. 
+
         '''
-        path = os.path.join(pathname,filename)
+        
+        #creates a path name with the file name and the path
+        path = os.path.join(pathName,fileName)
+        #if the path does not exist then make it
         if not os.path.exists(path):
             os.mkdir(path)
             return path
         return path
-
-
-
-    def download_dataset(self, dataset_object,path_to_dir): #FIXME (use the dataset name, not database)
-        '''
-        Description:
-            This function takes in a dataset_object (SMDataset) and path_to_dir
-            to download and setup the directory for that dataset on file
-        Input:
-                dataset_object: a SMDataset object that contains information on a 
-                Metaspace dataset
-                path_to_dir: a path to the desired Directory where the downloaded dataset
-                will be in
-        Output: None
-        '''
-        dataset_Name = dataset_object.name
-        dir_path_name = self.create_dir(dataset_Name, path_to_dir)
-        dataset_object.download_to_dir(dir_path_name)
-
-
-
-
-
-    def get_download_links(self, dataset):
-        '''
-        Description
-        ----------
-        A function that returns download links from a specified dataset.
-        
-        Parameters
-        ----------
-        dataset : SMDataset object
-            A object that contains a dataset from Metaspace.
-    
-        Returns
-        -------
-        A data structure
-            Contains links to downloadthe dataset's files.
-        '''
-        return dataset.download_links()
-
