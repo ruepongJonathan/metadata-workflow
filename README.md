@@ -10,7 +10,7 @@ from metadata_workflow import metaspace_fetch as mf
 
 ### Step one: importing and setting up connection to METASPACE
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 #this makes an instance of metaspaceFetch and sets up the connection to METASPACE
 ms = mf.metaspaceFetch()
@@ -21,7 +21,7 @@ should go. By default it will make a new folder local to where the package. The 
 
 ### Step two: search METASPACE
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 ms = mf.metaspaceFetch()
 
@@ -54,7 +54,7 @@ paramters/filters include:
 
 ### Step three: make dataframe
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 ms = mf.metaspaceFetch()
 
@@ -95,7 +95,7 @@ included information by default:
 
 ### Step four: filtering/annotations
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 ms = mf.metaspaceFetch()
 
@@ -139,7 +139,7 @@ the new column "Molecules" which can be called before `filter_molecule()`. The c
 which contains annotations/results of the molecules detected in the dataset.
 
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 ms = mf.metaspaceFetch()
 
@@ -160,7 +160,7 @@ dataframe = ms.filter_molecule(dataframe, molecules=["C24H45O7P"])
 
 ### Step five: downloading metadata
 ```python
-import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 
 ms = mf.metaspaceFetch()
 
