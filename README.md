@@ -17,7 +17,7 @@ import metaspace_fetch as mf
 ms = mf.metaspaceFetch()
 ```
 Give an argument to `downloadPathName` to specify where downloaded datasets
-should go. By default it will make a new folder local to where the package is called 
+should go. By default it will make a new folder local to where the package. The folder will be called
 "data"
 
 ### Step two: search METASPACE
