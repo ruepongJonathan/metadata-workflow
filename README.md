@@ -4,8 +4,7 @@ This package connects to the METASPACE server using the metaspace2020 api and al
 ## Getting Started
 
 ```python
-import metaspace_fetch as mf
-#from metadata_workflow import metaspace_fetch as mf
+from metadata_workflow import metaspace_fetch as mf
 ```
 ## Work flow
 
