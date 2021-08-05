@@ -1,7 +1,7 @@
 # metasdata-workflow
 This package connects to the METASPACE server using the metaspace2020 api and allows for searching, filtering, and downloading metadata on METASPACE.
 
-## Gettting Started
+## Getting Started
 
 ```python
 import metaspace_fetch as mf
