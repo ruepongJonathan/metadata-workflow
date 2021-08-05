@@ -649,7 +649,6 @@ class metaspaceFetch():
     def get_dataset_tissue_modification(self, dataset):
         return dataset._metadata["Sample_Preparation"].get("Tissue_Modification", "N/A")
     
-    
     def set_download_pathname(self, pathName):
         self.__downloadPathName = pathName
         
