@@ -27,7 +27,7 @@ import metaspace_fetch as mf
 ms = mf.metaspaceFetch()
 
 #call the search_metaspace() function to search datasets by the given arguments
-#ex: search datasets with keyword brain and it is a Homo sapiens (human)
+#ex: search datasets with keyword brain and is a Homo sapiens (human)
 datasets = ms.search_metaspace(keyword = "brain", organism = "Homo sapiens (human)
 ")
 ```
@@ -62,7 +62,7 @@ ms = mf.metaspaceFetch()
 datasets = ms.search_metaspace(keyword = "brain", organism = "Homo sapiens (human)")
 
 #call make_dataframe() to make a dataframe which includes information on each dataset
-#provided by the guven list
+#provided by the given list
 dataframe = ms.make_dataframe(datasets)
 ```
 `make_dataframe()` takes a list of dataset objects (SMDataset) and produces a dataframe
@@ -133,8 +133,8 @@ filter/parameters:
 * lessOrEq_PixelSize_Yaxis
 * lessOrEq_mzValue
 
-`filter_molecule()` filters the dataframe by detected molecules. It takes in a list
-of keys or values to filter by. Molecule must be represented by its ion formula. It adds in a new
+`filter_molecule()` filters the dataframe by molecules. These molcules are annotations on METASPACE. The function
+takes in a list of keys or values to filter by. Molecules must be represented by its ion formula. The function adds in a new
 column called "Molecules" if the given dataframe does not have it. `annotate()` is called to include 
 the new column "Molecules" which can be called before `filter_molecule()`. The column is a list dataframes
 which contains annotations/results of the molecules detected in the dataset.
@@ -184,16 +184,18 @@ to_Download = ["Some name", "Other name"]
 ms.dataset_selection(dataframe, selected_Datasets=to_Download, df_Column="Name", download_All=False)
 ```
 
-`dataset_selection()` downloads datasets based on a given list. 
+`dataset_selection()` downloads datasets based on a given list.
+Note: The function currently only prints out the dataset object. Does not download anything.
 
 parameters:
 * df: the dataframe of datasets
-* selected_Datasets: a list datasets to download 
-* df_Column: the column to select the datasets to download (defaults to "Name")
-* download_All: make true if you wish to download all datasets present in the given dataframe
+* selected_Datasets: a list of datasets to download 
+* df_Column: the column to select the datasets from (defaults to the "Name" column)
+* download_All: set to True to download all datasets present in the given dataframe
 
 `dataset_selection()` downloads and stores the datasets to a default directory which can be specified
-by using `set_download_pathname()`. Use `get_download_pathname()` to show the current path name to the directory.
+by using `set_download_pathname()`. Use `get_download_pathname()` to show the current path to the directory where the downloaded
+datasets will be stored.
 
 ## Installation
 
@@ -210,7 +212,7 @@ $ git clone https://github.com/ruepongJonathan/metadata-workflow.git
 $ cd metadata-workflow
 $ pip install --editable .
 ```
-Where `--editable` means the coe is symlinked into your environment's site-packages directory
+Where `--editable` means the code is symlinked into your environment's site-packages directory
 
 ## License
 
