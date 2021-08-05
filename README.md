@@ -1,4 +1,4 @@
-# metasdata-workflow
+# metadata-workflow
 This package connects to the METASPACE server using the metaspace2020 api and allows for searching, filtering, and downloading metadata on METASPACE.
 
 ## Getting Started
@@ -195,6 +195,34 @@ parameters:
 `dataset_selection()` downloads and stores the datasets to a default directory which can be specified
 by using `set_download_pathname()`. Use `get_download_pathname()` to show the current path to the directory where the downloaded
 datasets will be stored.
+
+## Extra
+`results()` function returns a dataframe of all annotations in detail. It can be called using a dataset object (SMDataset object). It returns results for a default database
+name: HMDB version:v4
+parameters:
+* database (Union[int, str, Tuple[str, str]]) – Molecular database name or id.
+* fdr (Optional[float]) – Max FDR level.
+* coloc_with (Optional[str]) – Fetch only results colocalized with formula.
+* include_chem_mods (bool) – Include results with chemical modifications.
+* include_neutral_losses (bool) – Include results with neutral losses.
+
+```python
+from metadata_workflow import metaspace_fetch as mf
+
+ms = mf.metaspaceFetch()
+
+datasets = mf.search_metaspace()
+
+#grabs a single dataset
+ds = datasets[0]
+
+#returns a  dataframe of annotations for the dataset
+results_DF = ds.results()
+```
+
+## Resources
+METASPACE2020 API
+https://metaspace2020.readthedocs.io/en/latest/index.html
 
 ## Installation
 
